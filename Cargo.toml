@@ -1,7 +1,10 @@
 [package]
 name = "rayt"
 version = "0.1.0"
+authors = ["Amal <amalb1154@gmail.com>"]
 edition = "2021"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
