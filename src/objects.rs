@@ -4,7 +4,9 @@ pub trait Object {
     fn hit(&self, ray: &Ray) -> Option<Hit>;
 }
 
-pub struct Hit {}
+pub struct Hit {
+    pub t: f32,
+}
 
 pub struct Sphere {
     pub center: Vec3,
@@ -19,7 +21,9 @@ impl Object for Sphere {
         let c = oc.dot(&oc) - self.radius * self.radius;
         let desciminant = b * b - a * c;
         if desciminant > 0.0 {
-            Some(Hit {})
+            Some(Hit {
+                t: (-b - desciminant.sqrt()) / a,
+            })
         } else {
             None
         }

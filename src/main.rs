@@ -13,8 +13,9 @@ pub fn color(ray: Ray) -> Vec3 {
         center: Vec3(0.0, 0.0, -1.0),
         radius: 0.5,
     };
-    if sphere.hit(&ray).is_some() {
-        return Vec3(1.0, 0.0, 0.0);
+    if let Some(hit) = sphere.hit(&ray) {
+        let normal = (ray.point_at(hit.t) - Vec3(0.0, 0.0, -1.0)).into_unit();
+        return 0.5 * (normal + Vec3(1.0, 1.0, 1.0));
     }
     let unit_direction = ray.direction.into_unit();
     let t = 0.5 * (unit_direction.1 + 1.0);
@@ -49,6 +50,6 @@ fn main() {
         *pixel = Rgb(color);
     }
     buffer
-        .save("renders/firstimage.png")
+        .save("renders/visualizing_normals.png")
         .expect("failed to save image.");
 }
