@@ -5,6 +5,7 @@
     clippy::cast_sign_loss
 )]
 
+mod camera;
 mod objects;
 mod ray;
 mod vec3;
@@ -13,7 +14,7 @@ use image::{ImageBuffer, Rgb, RgbImage};
 use objects::{Object, Sphere};
 use vec3::Vec3;
 
-use crate::ray::Ray;
+use crate::{camera::Camera, ray::Ray};
 
 type BoxedObject = Box<dyn Object>;
 
@@ -33,6 +34,7 @@ fn main() {
     const AR: f32 = 16.0 / 9.0;
     const HEIGHT: usize = 2160;
     const WIDTH: usize = (HEIGHT as f32 * AR) as usize;
+    let samples_per_pixel = 100;
 
     // World
     let world: Vec<BoxedObject> = vec![
@@ -48,29 +50,26 @@ fn main() {
 
     //Camera
     let viewport_height = 2.0;
-    let viewport_width = AR * viewport_height;
     let focal_length = 1.0;
-
     let origin = Vec3(0.0, 0.0, 0.0);
-    let horizontal = Vec3(viewport_width, 0.0, 0.0);
-    let vertical = Vec3(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3(0.0, 0.0, focal_length);
+
+    let camera = Camera::new(origin, viewport_height, AR, focal_length);
 
     // Render
     let mut buffer: RgbImage = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
     for (x, y, pixel) in buffer.enumerate_pixels_mut() {
-        let u = x as f32 / (WIDTH - 1) as f32;
-        let v = 1.0 - (y as f32 / (HEIGHT - 1) as f32);
-        let r = Ray {
-            origin,
-            direction: lower_left_corner + u * horizontal + v * vertical - origin,
-        };
+        let mut col = Vec3(0.0, 0.0, 0.0);
+        for _ in 0..samples_per_pixel {
+            let u = (x as f32 + rand::random::<f32>()) / (WIDTH - 1) as f32;
+            let v = 1.0 - ((y as f32 + rand::random::<f32>()) / (HEIGHT - 1) as f32);
+            let r = camera.get_ray(u, v);
 
-        let color = color(&r, &world).to_rgb();
-        *pixel = Rgb(color);
+            col = col + color(&r, &world);
+        }
+        col = col / samples_per_pixel as f32;
+        *pixel = Rgb(col.to_rgb());
     }
     buffer
-        .save("renders/world.png")
+        .save("renders/world_with_antialiasing.png")
         .expect("failed to save image.");
 }
