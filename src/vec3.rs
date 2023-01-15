@@ -36,6 +36,19 @@ impl Vec3 {
         }
         [f(self.0), f(self.1), f(self.2)]
     }
+
+    pub fn random() -> Self {
+        Vec3(rand::random(), rand::random(), rand::random())
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let v = 2.0 * Vec3::random() - Vec3(1.0, 1.0, 1.0);
+            if v.dot(&v) <= 1.0 {
+                return v;
+            }
+        }
+    }
 }
 
 impl ops::Mul<Vec3> for f32 {

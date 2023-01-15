@@ -20,9 +20,16 @@ type BoxedObject = Box<dyn Object>;
 
 #[must_use]
 pub fn color(ray: &Ray, world: &[BoxedObject]) -> Vec3 {
-    if let Some(hit) = world.hit(ray, 0.0..std::f32::MAX) {
-        let normal = hit.normal;
-        return 0.5 * (normal + Vec3(1.0, 1.0, 1.0));
+    if let Some(hit) = world.hit(ray, 0.001..std::f32::MAX) {
+        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere();
+        return 0.5
+            * color(
+                &Ray {
+                    origin: hit.p,
+                    direction: target - hit.p,
+                },
+                world,
+            );
     }
     let unit_direction = ray.direction.into_unit();
     let t = 0.5 * (unit_direction.1 + 1.0);
@@ -67,9 +74,10 @@ fn main() {
             col = col + color(&r, &world);
         }
         col = col / samples_per_pixel as f32;
+        col = Vec3(col.0.sqrt(), col.1.sqrt(), col.2.sqrt());
         *pixel = Rgb(col.to_rgb());
     }
     buffer
-        .save("renders/world_with_antialiasing.png")
+        .save("renders/diffusion.png")
         .expect("failed to save image.");
 }
